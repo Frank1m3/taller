@@ -10,18 +10,18 @@ Nuevo turno
 
     <!-- tarjeta -->
     <div class="card">
-      <div class="card-header">
-        <button type="button" class="btn btn-primary" id="btnAgregar">Aperturar caja</button>
+      <div class="card-header bg-primary">
+        <button type="button" class="btn btn-outline-light" id="btnAgregar">Aperturar caja</button>
       </div>
       <div class="card-body">
         <table class="table table-striped" id="tbl">
           <thead>
             <tr>
+              <th>Nro_turno</th>
               <th>Fiscal</th>
               <th>Cajero</th>
               <th>Monto inicial</th>
               <th>Fecha de Registro</th>
-              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -48,7 +48,7 @@ Nuevo turno
               <input type="hidden" id="txtIdApertura">
               <div class="form-group">
                 <label for="txtnro_turno">Nro de Turno:</label>
-                <input type="date" class="form-control" id="txtnro_turno">
+                <input type="hidden" class="form-control" id="txtnro_turno">
               </div>
           <div class="modal-body">
             <div class="form-group">

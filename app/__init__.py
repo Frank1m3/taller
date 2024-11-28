@@ -12,7 +12,7 @@ csrf.init_app(app)
 app.secret_key = b'_5#y2L"F6Q7z\n\xec]/'
 
 # Establecer duración de la sesión, 15 minutos
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=15)
 
 # importar modulo de seguridad
 from app.rutas.seguridad.login_routes import logmod

@@ -41,6 +41,6 @@ def logout():
 @logmod.route('/')
 def inicio():
     if 'usuario_nombre' in session:
-        return render_template('inicio.html')
+        return render_template('base.html')
     else:
         return redirect(url_for('login.login'))

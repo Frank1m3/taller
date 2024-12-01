@@ -6,9 +6,9 @@ Nuevo turno
 
 {% block contenido %}
 <div class="container mt-4">
-    <h3>Habilitacion turno</h3>
+    <h3>Habilitación turno</h3>
 
-    <!-- tarjeta -->
+    <!-- Tarjeta -->
     <div class="card">
       <div class="card-header bg-primary">
         <button type="button" class="btn btn-outline-light" id="btnAgregar">Aperturar caja</button>
@@ -38,7 +38,7 @@ Nuevo turno
 
           <!-- Modal Header -->
           <div class="modal-header">
-            <h4 class="modal-title" id="modalTitle"></h4>
+            <h4 class="modal-title" id="modalTitle">REALIZAR APERTURA</h4>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
           </div>
 
@@ -46,32 +46,28 @@ Nuevo turno
           <div class="modal-body">
             <div class="form-group">
               <input type="hidden" id="txtIdApertura">
-              <div class="form-group">
-                <label for="txtnro_turno">Nro de Turno:</label>
-                <input type="hidden" class="form-control" id="txtnro_turno">
-              </div>
-          <div class="modal-body">
+            </div>
             <div class="form-group">
-              <label for="txtFiscal">Fiscal:</label>
-              <input type="text" class="form-control" placeholder="Ingrese la clave fiscal" id="txtFiscal">
+              <label for="txtClaveFiscal">Fiscal:</label>
+              <input type="text" class="form-control" placeholder="Ingrese la clave fiscal" id="txtClaveFiscal">
             </div>
             <div class="form-group">
               <label for="txtCajero">Cajero/a:</label>
               <input type="text" class="form-control" placeholder="Ingrese id del cajero" id="txtCajero">
             </div>
             <div class="form-group">
-              <label for="txtRegistro">Fecha de Registro:</label>
-              <input type="date" class="form-control" id="txtRegistro">
+              <label for="txtMontoInicial">Monto inicial:</label>
+              <input type="number" class="form-control" placeholder="Ingrese el monto inicial" id="txtMontoInicial">
             </div>
             <div class="form-group">
-              <label for="txtmonto_inicial">Monto inicial:</label>
-              <input type="text" class="form-control" placeholder="Ingrese el monto inicial" id="txtmonto_inicial">
+              <label for="txtRegistro">Fecha de Registro:</label>
+              <input type="hidden" class="form-control" id="txtRegistro">
             </div>
           </div>
 
           <!-- Modal footer -->
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="btnGuardar">Confirmar</button>
+            <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
             <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
           </div>
 
@@ -92,184 +88,182 @@ Nuevo turno
 
 {% block js %}
 <script>
-  const initDatatable = () => {
-    $('#tbl').DataTable({
-      language: {
-        url: "{{ url_for('static', filename='vendor/datatables/es-ES.json') }}",
-      },
-      ajax: '/api/v1/aperturas',
-      columns: [
-        { data: 'id_apertura' },
-        { data: 'nro_turno' },
-        { data: 'fiscal' },
-        { data: 'cajero' },
-        { data: 'registro'},
-        { data: 'monto_inicial', render: function(data) {
-          return data.charAt(0).toUpperCase() + data.slice(1);}
-        },
-        { data: function(row) {
-            return `<button type="button" name="btn_editar" class="btn btn-primary" data-id="${row.id_apertura}">Editar</button>
-                    <button type="button" name="btn_eliminar" class="btn btn-danger" data-id="${row.id_apertura}">Eliminar</button>`;
-          }
+ const CSRFToken = "{{ csrf_token() }}" || null;
+
+const initDatatable = () => {
+  $('#tbl').DataTable({
+    language: {
+      url: "{{ url_for('static', filename='vendor/datatables/es-ES.json') }}",
+    },
+    ajax: '/api/v1/aperturas', // Change to new endpoint
+    columns: [
+      { data: 'nro_turno' },
+      { data: 'clave_fiscal' },
+      { data: 'cajero' },
+      { data: 'monto_inicial' },
+      { data: 'registro' },
+      { data: function(row) {
+          return `<button type="button" name="btn_editar" class="btn btn-primary" data-id="${row.id_apertura}">Editar</button>
+                  <button type="button" name="btn_eliminar" class="btn btn-danger" data-id="${row.id_apertura}">Eliminar</button>`
         }
-      ]
-    });
-  }
-
-  const agregar = () => {
-    $('#btnAgregar').on('click', function(){
-      $('#modalTitle').text("realizar apertura");
-      $('#txtIdnro_turno').val("");
-      $('#txtFiscal').val("");
-      $('#txtCajero').val("");
-      $('#txtRegistro').val("");
-      $('#txtmonto_inicial').val("");
-      $('#modalFormulario').modal();
-    });
-  }
-
-  const guardar = () => {
-    $('#btnGuardar').on('click', function() {
-      const idnro_turno = $('#txtIdnro_turno').val();
-      const nuevoFiscal = $('#txtFiscal').val();
-      const nuevoCajero = $('#txtRazonSocial').val();
-      const nuevoRegistro = $('#txtRegistro').val();
-      const nuevomonto_inicial = $('#txtmonto_inicial').val();
-      const tabla = $('#tbl').DataTable();
-  
-      const aperturaData = {
-        nro_turno: nuevonro_turno,
-        Fiscal: nuevoFiscal,
-        Cajero: nuevoCajero,
-        registro: nuevoRegistro,
-        monto_inicial: nuevomonto_inicial // Usamos el estado directamente como string
-      };
-  
-      // Operación de actualización
-      if (idProveedor) {
-        fetch(`/api/v1/aperturas/${idApertura}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(aperturaData)
-        })
-        .then(resp => resp.json())
-        .then(data => {
-          if (data && data.success) {
-            tabla.ajax.reload(); // Recarga la tabla
-            Swal.fire("Completado", "La apertura ha sido realizada correctamente.", "success");
-          } else {
-            Swal.fire("Error", data.error || "Error al intentar aperturar.", "error");
-          }
-        }).catch(err => {
-          console.error(err);
-          Swal.fire("Error", "Ocurrió un error al intentar aperturar.", "error");
-        });
-      } else { // Operación de agregar
-        fetch(`/api/v1/aperturas`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(aperturaData)
-        })
-        .then(resp => resp.json())
-        .then(data => {
-          if (data && data.success) {
-            tabla.ajax.reload(); // Recarga la tabla
-            Swal.fire("Guardado", "La apertura ha sido agregado correctamente.", "success");
-          } else {
-            Swal.fire("Error", data.error || "Error no se pudo realizar la apertura.", "error");
-          }
-        }).catch(err => {
-          console.error(err);
-          Swal.fire("Error", "Ocurrió un error al intentar aperturar.", "error");
-        });
       }
-      $('#modalFormulario').modal("hide"); // Cierra el modal
-    });
-  }
-  
+    ]
+  });
+}
 
-  const editar = () => {
-    $('#tbl').on('click', 'button[name="btn_editar"]', function(){
-      Swal.fire({
-        title: "¿Deseas editar los datos de la apertura?",
-        showCancelButton: true,
-        confirmButtonText: "Si",
-        cancelButtonText: `No`
-      }).then((result) => {
-        if (result.isConfirmed) {
-          $('#modalTitle').text("Editar un Apertura");
+const agregar = () => {
+  $('#btnAgregar').on('click', function(){
+    $('#modalTitle').text("Agregar una Apertura");
+    $('#txtClaveFiscal').val("");
+    $('#txtCajero').val("");
+    $('#txtMontoInicial').val("");
+    $('#txtIdApertura').val("");  // Clear the ID field
+    $('#modalFormulario').modal();
+  });
+}
 
-          const idApertura = $(this).data('id');
-          $('#txtIdApertura').val(idApertura);
+const guardar = () => {
+  $('#btnGuardar').on('click', function() {
+    const clave_fiscal = $('#txtClaveFiscal').val();
+    const cajero = $('#txtCajero').val();
+    const monto_inicial = $('#txtMontoInicial').val();
+    const idApertura = $('#txtIdApertura').val();
+    const tabla = $('#tbl').DataTable();
 
-          fetch(`/api/v1/aperturas/${idApertura}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          .then(resp => resp.json())
-          .then(data => {
-            $('#txtnro_turno').val(data.data.nro_turno);
-            $('#txtFiscal').val(data.data.discal);
+    if(idApertura) {
+      // update
+      fetch(`/api/v1/aperturas/${idApertura}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRFToken
+        },
+        body: JSON.stringify({
+          clave_fiscal: clave_fiscal,
+          cajero: cajero,
+          monto_inicial: monto_inicial
+        })
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if(data && !data.error && data.success) {
+          tabla.ajax.reload();
+          Swal.fire("Actualizado", "La apertura ha sido actualizada correctamente.", "success");
+        } else {
+          Swal.fire(data.error);
+        }
+      }).catch(err => {
+        console.error(err);
+        Swal.fire("Error", "Ocurrió un error al actualizar la apertura.", "error");
+      });
+    } else {
+      // insert
+      fetch(`/api/v1/aperturas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRFToken
+        },
+        body: JSON.stringify({
+          clave_fiscal: clave_fiscal,
+          cajero: cajero,
+          monto_inicial: monto_inicial
+        })
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if(data && !data.error && data.success) {
+          tabla.ajax.reload();
+          Swal.fire("Agregado", "La apertura ha sido agregada correctamente.", "success");
+        } else {
+          Swal.fire(data.error);
+        }
+      }).catch(err => {
+        console.error(err);
+        Swal.fire("Error", "Ocurrió un error al guardar la apertura.", "error");
+      });
+    }
+    $('#modalFormulario').modal("hide");
+  });
+}
+
+const editar = () => {
+  $('#tbl').on('click', 'button[name="btn_editar"]',function(){
+    Swal.fire({
+      title: "¿Deseas editar este registro?",
+      showCancelButton: true,
+      confirmButtonText: "Si",
+      cancelButtonText: `No`
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $('#modalTitle').text("Editar una Apertura");
+
+        const idApertura = $(this).data('id');
+        $('#txtIdApertura').val(idApertura);
+
+        fetch(`/api/v1/aperturas/${idApertura}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(resp => resp.json())
+        .then(data => {
+          if (data && data.success) {
+            $('#txtClaveFiscal').val(data.data.clave_fiscal);
             $('#txtCajero').val(data.data.cajero);
             $('#txtRegistro').val(data.data.registro);
-            $('#txtmonto_inicial').val(data.data.monto);
+            $('#txtMontoInicial').val(data.data.monto_inicial);
             $('#modalFormulario').modal();
-          });
-        }
-      });
+          }
+        });
+      }
     });
-  }
-
-  const eliminar = () => {
-    $('#tbl').on('click', 'button[name="btn_eliminar"]', function(){
-      const idProveedor = $(this).data('id');
-      Swal.fire({
-        title: "¿Deseas eliminar este registro?",
-        showCancelButton: true,
-        confirmButtonText: "Si",
-        cancelButtonText: `No`
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch(`/api/v1/aperturas/${idApertura}`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          .then(resp => resp.json())
-          .then(data => {
-            if(data && !data.error && data.success) {
-              const fila = $(this).closest('tr');
-              const tabla = $('#tbl').DataTable();
-              tabla.row(fila).remove().draw();
-              Swal.fire("Eliminado", "", data.success);
-            } else {
-              Swal.fire(data.error);
-            }
-          }).catch(err => {
-            Swal.fire("Error", "Ocurrió un error al intentar eliminar.", "error");
-          });
-        }
-      });
-    });
-  }
-
-  const addEvents = () => {
-    agregar();
-    guardar();
-    editar();
-    eliminar();
-  }
-
-  $(document).ready(function() {
-    initDatatable();
-    addEvents();
   });
+}
+
+const eliminar = () => {
+  $('#tbl').on('click', 'button[name="btn_eliminar"]',function(){
+    const idApertura = $(this).data('id');
+    Swal.fire({
+      title: "¿Deseas eliminar este registro?",
+      showCancelButton: true,
+      confirmButtonText: "Si",
+      cancelButtonText: `No`
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`/api/v1/aperturas/${idApertura}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CSRFToken
+          }
+        })
+        .then(resp => resp.json())
+        .then(data => {
+          if (data && !data.error && data.success) {
+            const fila = $(this).closest('tr');
+            const tabla = $('#tbl').DataTable();
+            tabla.row(fila).remove().draw();
+            Swal.fire("Eliminado", "La apertura ha sido eliminada correctamente.", "success");
+          } else {
+            Swal.fire(data.error);
+          }
+        }).catch(err => {
+          console.error(err);
+          Swal.fire("Error", "Ocurrió un error al eliminar la apertura.", "error");
+        });
+      }
+    });
+  });
+}
+
+$(document).ready(function() {
+  initDatatable();
+  agregar();
+  guardar();
+  editar();
+  eliminar();
+});
 </script>
 {% endblock %}

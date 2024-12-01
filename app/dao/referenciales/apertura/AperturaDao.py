@@ -5,7 +5,7 @@ class AperturaDao:
 
     def getAperturas(self):
         aperturaSQL = """
-        SELECT id_apertura,nro_turno, fiscal, cajero, registro, monto_inicial
+        SELECT id_apertura, nro_turno, clave_fiscal, cajero, registro, monto_inicial
         FROM aperturas
         """
         # objeto conexion
@@ -22,7 +22,7 @@ class AperturaDao:
                 lista_ordenada.append({
                     "id_apertura": item[0],
                     "nro_turno": item[1],
-                    "fiscal": item[2],
+                    "clave_fiscal": item[2],
                     "cajero": item[3],
                     "registro": item[4],
                     "monto_inicial": item[5] 
@@ -36,7 +36,7 @@ class AperturaDao:
 
     def getAperturaById(self, id_apertura):
         aperturaSQL = """
-        SELECT id_apertura, nro_turno, fiscal, cajero, registro
+        SELECT id_apertura, nro_turno, clave_fiscal, cajero, registro
         FROM aperturas WHERE id_apertura=%s
         """
         # objeto conexion
@@ -52,7 +52,7 @@ class AperturaDao:
                 return {
                     "id_apertura": aperturaEncontrada[0],
                     "nro_turno": aperturaEncontrada[1],
-                    "fiscal": aperturaEncontrada[2],
+                    "clave_fiscal": aperturaEncontrada[2],
                     "cajero": aperturaEncontrada[3],
                     "registro": aperturaEncontrada[4],
                     "monto_inicial": aperturaEncontrada[5]    
@@ -64,10 +64,10 @@ class AperturaDao:
             cur.close()
             con.close()
 
-    def guardarApertura(self, nro_turno, fiscal, cajero, registro, monto_inicial):
+    def guardarApertura(self, clave_fiscal, cajero, monto_inicial):
         insertAperturaSQL = """
-        INSERT INTO aperturas(ruc, fiscal, cajero, registro, monto_inicial)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO aperturas(clave_fiscal, cajero, monto_inicial)
+        VALUES (%s, %s ,%s)
         """
 
         conexion = Conexion()
@@ -76,7 +76,7 @@ class AperturaDao:
 
         # Ejecucion exitosa
         try:
-            cur.execute(insertAperturaSQL, (nro_turno, fiscal, cajero, registro, monto_inicial))
+            cur.execute(insertAperturaSQL, ( clave_fiscal, cajero, monto_inicial))
             # se confirma la insercion
             con.commit()
             return True
@@ -88,10 +88,10 @@ class AperturaDao:
 
         return False
 
-    def updateApertura(self, id_apertura, nro_turno, fiscal, cajero, registro, monto_inicial):
+    def updateApertura(self, id_apertura, nro_turno, clave_fiscal, cajero, registro, monto_inicial):
         updateAperturaSQL = """
         UPDATE aperturas
-        SET nro_turno=%s, fiscal=%s, cajero=%s, registro=%s, monto:inicial=%s
+        SET nro_turno=%s, clave_fiscal=%s, cajero=%s, registro=%s, monto_inicial=%s
         WHERE id_apertura=%s
         """
 
@@ -101,7 +101,7 @@ class AperturaDao:
 
         # Ejecucion exitosa
         try:
-            cur.execute(updateAperturaSQL, (nro_turno, fiscal, cajero, registro, monto_inicial, id_apertura))
+            cur.execute(updateAperturaSQL, (nro_turno, clave_fiscal, cajero, registro, monto_inicial, id_apertura))
             # se confirma la insercion
             con.commit()
             return True

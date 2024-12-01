@@ -54,7 +54,8 @@ def addApertura():
     data = request.get_json()
     aperturadao = AperturaDao()
 
-    campos_requeridos = ['nro_turno', 'fiscal','cajero', 'registro', 'monto_inicial']
+    # Aseguramos que los campos requeridos estén presentes y no vacíos
+    campos_requeridos = ['clave_fiscal', 'cajero', 'monto_inicial']
 
     for campo in campos_requeridos:
         if campo not in data or data[campo] is None or len(data[campo].strip()) == 0:
@@ -63,26 +64,22 @@ def addApertura():
                 'error': f'El campo {campo} es obligatorio y no puede estar vacío.'
             }), 400
 
-
     try:
+        # Guardamos la apertura, la base de datos generará automáticamente el nro_turno
         id_apertura = aperturadao.guardarApertura(
-            data['nro_turno'],
-            data['fiscal'].strip().upper(),
+            data['clave_fiscal'].strip().upper(),
             data['cajero'].strip(),
-            data['registro'],
             data['monto_inicial']
-            
         )
 
+        # Devolvemos solo los datos que no son autogenerados
         return jsonify({
             'success': True,
             'data': {
-                'id_apertura': id_apertura,
-                'nro_turno': data['nro_turno'],
-                'fiscal': data['fiscal'].upper(),
+                'id_apertura': id_apertura,  # ID generado por la base de datos
+                'clave_fiscal': data['clave_fiscal'].upper(),
                 'cajero': data['cajero'].upper(),
-                'registro': data['registro'],
-                'monto_inicial': data['monto_inicial']   
+                'monto_inicial': data['monto_inicial']
             },
             'error': None
         }), 201
@@ -99,7 +96,8 @@ def updateApertura(id_apertura):
     data = request.get_json()
     aperturadao = AperturaDao()
 
-    campos_requeridos = ['nro_turno', 'fiscal', 'cajero', 'registro', 'monto_inicial']
+    # Aseguramos que los campos requeridos estén presentes y no vacíos
+    campos_requeridos = ['clave_fiscal', 'cajero', 'registro', 'monto_inicial', 'estado']
 
     for campo in campos_requeridos:
         if campo not in data or data[campo] is None or len(data[campo].strip()) == 0:
@@ -117,24 +115,26 @@ def updateApertura(id_apertura):
         }), 400
 
     try:
-        if aperturadao.updateApertura(
+        # Llamamos a la función de actualización
+        updated = aperturadao.updateApertura(
             id_apertura,
-            data['nro_turno'],
-            data['fiscal'].strip().upper(),
+            data['clave_fiscal'].strip().upper(),
             data['cajero'].strip().upper(),
             data['registro'],
-            data['monto_inicial']
-         
-        ):
+            data['monto_inicial'],
+            estado  # Solo enviamos el estado, no el nro_turno
+        )
+
+        if updated:
             return jsonify({
                 'success': True,
                 'data': {
                     'id_apertura': id_apertura,
-                    'nro_turno': data['nro_turno'],
-                    'fiscal': data['fiscal'].upper(),
+                    'clave_fiscal': data['clave_fiscal'].upper(),
                     'cajero': data['cajero'].upper(),
                     'registro': data['registro'],
-                    'monto_inicial': data['monto_inicial']
+                    'monto_inicial': data['monto_inicial'],
+                    'estado': estado
                 },
                 'error': None
             }), 200
@@ -158,7 +158,7 @@ def deleteApertura(id_apertura):
         if aperturadao.deleteApertura(id_apertura):
             return jsonify({
                 'success': True,
-                'mensaje': f'Apertura con ID {id_apertura} eliminado correctamente.',
+                'mensaje': f'Apertura con ID {id_apertura} eliminada correctamente.',
                 'error': None
             }), 200
         else:

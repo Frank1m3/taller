@@ -138,3 +138,27 @@ CREATE TABLE aperturas (
     FOREIGN KEY (fiscal) REFERENCES funcionarios(id_personas) 
 );
 
+
+
+-- Verificamos que tanto fiscal como cajero sean roles válidos y que no sean la misma persona
+INSERT INTO aperturas (clave_fiscal, cajero, monto_inicial)
+SELECT %s, %s, %s
+WHERE EXISTS (
+    -- Verificamos que el clave_fiscal corresponde a un fiscal
+    SELECT 1
+    FROM funcionarios f_clave_fiscal
+    WHERE f_clave_fiscal.fun_id = %s
+    AND f_clave_fiscal.es_fiscal = TRUE
+) AND EXISTS (
+    -- Verificamos que el cajero corresponde a un cajero
+    SELECT 1
+    FROM funcionarios f2_cajero
+    WHERE f2_cajero.fun_id = %s
+    AND f2_cajero.es_cajero = TRUE
+) AND %s != %s;  -- Verificamos que el fiscal no sea el mismo que el cajero
+
+ SELECT a.id_apertura, a.nro_turno, upper(p.nombres||' '||p.apellidos) as fiscal, upper(p2.nombres||' '||p2.apellidos) as cajero, to_char(a.registro,'DD/MM/YYYY HH24:MM:SS') as registro, a.monto_inicial
+        FROM aperturas a 
+       	left join funcionarios f on a.clave_fiscal = p.fun_id
+       	left join personas p2 on a.cajero  = p2.fun_id 
+        """

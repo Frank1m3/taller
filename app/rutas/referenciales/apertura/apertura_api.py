@@ -48,6 +48,7 @@ def getApertura(id_apertura):
             'success': False,
             'error': 'Ocurrió un error interno. Consulte con el administrador.'
         }), 500
+   
         
 
 @aperapi.route('/aperturas', methods=['POST'])

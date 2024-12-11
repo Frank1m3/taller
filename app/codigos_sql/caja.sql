@@ -162,3 +162,5 @@ WHERE EXISTS (
        	left join funcionarios f on a.clave_fiscal = p.fun_id
        	left join personas p2 on a.cajero  = p2.fun_id 
         """
+
+		select max(nro_turno)+1 nro_turno from aperturas a 

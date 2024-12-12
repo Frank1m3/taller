@@ -99,12 +99,32 @@ Nuevo turno
 // JavaScript para manejar la lógica de aperturas
 const CSRFToken = "{{ csrf_token() }}" || null;
 
+// Función para obtener el siguiente turno desde la API
+const obtenerSiguienteTurno = () => {
+  return fetch('/api/v1/aperturas')  // Cambia la URL al endpoint que devuelve las aperturas
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        return data.siguiente_turno;  // Retorna el siguiente turno
+      } else {
+        Swal.fire("Error", "No se pudo obtener el siguiente turno.", "error");
+        return null;
+      }
+    })
+    .catch(error => {
+      console.error("Error al obtener el siguiente turno:", error);
+      Swal.fire("Error", "Hubo un problema al obtener el siguiente turno.", "error");
+      return null;
+    });
+};
+
+// Función para inicializar la tabla de datos
 const initDatatable = () => {
   $('#tbl').DataTable({
     language: {
       url: "{{ url_for('static', filename='vendor/datatables/es-ES.json') }}",
     },
-    ajax: '/api/v1/aperturas', // Change to new endpoint
+    ajax: '/api/v1/aperturas', // Cambia a nuevo endpoint
     columns: [
       { data: 'nro_turno' },
       { data: 'clave_fiscal' },
@@ -118,19 +138,26 @@ const initDatatable = () => {
       }
     ]
   });
-}
+};
 
-
+// Función para agregar nueva apertura
 const agregar = () => {
-  $('#btnAgregar').on('click', function(){
-    $('#modalTitle').text("REALIZAR APERTURA");
-    $('#txtClaveFiscal').val("");
-    $('#txtCajero').val("");
-    $('#txtMontoInicial').val("");
-    $('#modalFormulario').modal();
+  $('#btnAgregar').on('click', async function() {
+    // Obtener el siguiente turno desde la API
+    const siguienteTurno = await obtenerSiguienteTurno();
+
+    if (siguienteTurno !== null) {
+      $('#modalTitle').text("REALIZAR APERTURA");
+      $('#txtNro_turno').val(siguienteTurno);  // Establecer el siguiente turno en el campo del formulario
+      $('#txtClaveFiscal').val("");
+      $('#txtCajero').val("");
+      $('#txtMontoInicial').val("");
+      $('#modalFormulario').modal();
+    }
   });
 }
 
+// Función para guardar la apertura
 const guardar = () => {
   $('#btnGuardar').on('click', function() {
     const clave_fiscal = $('#txtClaveFiscal').val();
@@ -139,7 +166,7 @@ const guardar = () => {
     const idApertura = $('#txtIdApertura').val();
     const tabla = $('#tbl').DataTable();
 
-    if(idApertura) {
+    if (idApertura) {
       // Actualizar
       fetch(`/api/v1/aperturas/${idApertura}`, {
         method: 'PUT',
@@ -155,7 +182,7 @@ const guardar = () => {
       })
       .then(resp => resp.json())
       .then(data => {
-        if(data && !data.error && data.success) {
+        if (data && !data.error && data.success) {
           tabla.ajax.reload();
           Swal.fire("Actualizado", "La apertura ha sido actualizada correctamente.", "success");
         } else {
@@ -181,9 +208,9 @@ const guardar = () => {
       })
       .then(resp => resp.json())
       .then(data => {
-        if(data && !data.error && data.success) {
+        if (data && !data.error && data.success) {
           $('#txtIdApertura').val(data.id_apertura);
-          $('#txtNroTurno').val(data.nro_turno);  // Muestra el Nro_turno
+          $('#txtNro_turno').val(data.nro_turno);  // Muestra el Nro_turno
           $('#txtRegistro').val(data.registro);  // Muestra la Fecha de Registro
 
           tabla.ajax.reload();

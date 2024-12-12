@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app as app
 from app.dao.referenciales.apertura.AperturaDao import AperturaDao
 
+
 aperapi = Blueprint('aperapi', __name__)
 
 @aperapi.route('/aperturas', methods=['GET'])
@@ -8,11 +9,13 @@ def getAperturas():
     aperturadao = AperturaDao()
 
     try:
-        aperturas = aperturadao.getAperturas()
+        aperturas, ultimo_turno = aperturadao.getAperturas()  # Obtener aperturas y último turno
+        siguiente_turno = ultimo_turno + 1 if ultimo_turno is not None else 1  # Calcular el siguiente turno
 
         return jsonify({
             'success': True,
             'data': aperturas,
+            'siguiente_turno': siguiente_turno,  # Incluir el siguiente turno en la respuesta
             'error': None
         }), 200
 
@@ -22,6 +25,8 @@ def getAperturas():
             'success': False,
             'error': 'Ocurrió un error interno. Consulte con el administrador.'
         }), 500
+
+
 
 @aperapi.route('/aperturas/<int:id_apertura>', methods=['GET'])
 def getApertura(id_apertura):

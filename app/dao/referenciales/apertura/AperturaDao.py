@@ -2,7 +2,6 @@ from flask import current_app as app
 from app.conexion.Conexion import Conexion
 
 class AperturaDao:
-
     def getAperturas(self):
         # Consulta SQL para obtener todas las aperturas
         aperturaSQL = """
@@ -25,6 +24,8 @@ class AperturaDao:
             lista_aperturas = cur.fetchall()  # Trae los datos de la base de datos
             
             lista_ordenada = []
+            ultimo_turno = None  # Variable para almacenar el último turno
+            
             for item in lista_aperturas:
                 lista_ordenada.append({
                     "id_apertura": item[0],
@@ -35,16 +36,21 @@ class AperturaDao:
                     "monto_inicial": item[5],
                     "estado": item[6]
                 })
-            return lista_ordenada
+                
+                # Determinar el último nro_turno
+                if ultimo_turno is None or item[1] > ultimo_turno:
+                    ultimo_turno = item[1]
+                    
+            return lista_ordenada, ultimo_turno  # Devuelve también el último nro_turno
 
         except con.Error as e:
             app.logger.error(f"Error al obtener aperturas: {e}")
-            return []
+            return [], None  # Devuelve None si no se encuentra el turno
         
         finally:
             cur.close()
             con.close()
-
+   
     def getAperturaById(self, id_apertura):
         # Consulta SQL para obtener una apertura específica por su ID
         aperturaSQL = """
@@ -79,6 +85,7 @@ class AperturaDao:
         finally:
             cur.close()
             con.close()
+            
 
     def guardarApertura(self, clave_fiscal, cajero, monto_inicial):
         # Consulta para insertar una nueva apertura
